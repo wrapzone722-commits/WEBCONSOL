@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoDetail Hub — Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Initialize theme BEFORE React renders to prevent flash
+      (function () {
+        try {
+          const stored = localStorage?.getItem("theme");
+          const isDark = stored ? stored.includes("dark") : false;
+          if (isDark) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {
+          // silently ignore any errors
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script type="module" src="/client/App.tsx"></script>
+  </body>
+</html>

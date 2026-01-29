@@ -1,0 +1,63 @@
+version: "3.8"
+
+# Конфигурация максимально приближена к Timeweb Cloud App Platform
+# Используйте для тестирования перед деплоем на Timeweb
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: autodetailhub:latest
+    container_name: autodetailhub-timeweb
+    ports:
+      - "8080:8080"
+    environment:
+      # Такие же переменные как на Timeweb
+      - NODE_ENV=production
+      - PORT=8080
+      - PING_MESSAGE=pong
+      # Добавьте другие переменные по необходимости:
+      # - DATABASE_URL=postgresql://user:pass@db:5432/autodetailhub
+    restart: unless-stopped
+
+    # Health check как на Timeweb
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const port=process.env.PORT||'8080';const url='http://127.0.0.1:'+port+'/health';const req=require('http').get(url,(r)=>{r.resume();process.exit(r.statusCode===200?0:1);});req.on('error',()=>process.exit(1));req.setTimeout(4000,()=>{req.destroy();process.exit(1);});",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    # Ограничения ресурсов (симуляция Timeweb тарифов)
+    deploy:
+      resources:
+        limits:
+          # Симуляция: 1 vCPU + 2GB RAM (рекомендуемый тариф)
+          cpus: "1.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+
+  # Раскомментируйте если используете PostgreSQL на Timeweb
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: autodetailhub-db
+  #   environment:
+  #     POSTGRES_USER: autodetail
+  #     POSTGRES_PASSWORD: changeme_secure_password
+  #     POSTGRES_DB: autodetailhub
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+# volumes:
+#   postgres_data:
